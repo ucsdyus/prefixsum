@@ -3,7 +3,7 @@
 NVCCFLAGS = --ptxas-options=-v -std=c++14 -O3 -Xcompiler "/w"
 
 APP=pfxsum
-OBJECTS = helper.obj pfxsum.obj pfxsum_host.obj
+OBJECTS = helper.obj pfxsum.obj pfxsum_host.obj pfxsum_naive.obj
 
 NVCC = nvcc
 
