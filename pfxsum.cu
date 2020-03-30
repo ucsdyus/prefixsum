@@ -1,5 +1,4 @@
 #include <iostream>
-#include <memory>
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
@@ -20,13 +19,13 @@ int main(int argc, char** argv) {
     int capability = ReportDevice();
     printf("GPU capacity: %d\n", capability);
 
-    std::unique_ptr<ValueType[]> host_vals(new ValueType[cmd_opt.n]);
-    genData(cmd_opt.n, host_vals.get(), cmd_opt.use_rand);
+    ValueType* host_vals = new ValueType[cmd_opt.n];
+    genData(cmd_opt.n, host_vals, cmd_opt.use_rand);
 
-    std::unique_ptr<ValueType[]> ground_truth(new ValueType[cmd_opt.n]);
-    pfxsum_host(cmd_opt.n, host_vals.get(), ground_truth.get());
+    ValueType* ground_truth = new ValueType[cmd_opt.n];
+    pfxsum_host(cmd_opt.n, host_vals, ground_truth);
 
-    std::unique_ptr<ValueType[]> res(new ValueType[cmd_opt.n]);
+    ValueType* res = new ValueType[cmd_opt.n];
 
     ValueType* cuda_vals = nullptr;
     ValueType* cuda_pfx = nullptr;
@@ -36,7 +35,7 @@ int main(int argc, char** argv) {
     cudaMalloc(&cuda_pfx, cmd_opt.n * sizeof(ValueType));
     checkCUDAError("Error allocating device memory for prefix sum");
 
-    cudaMemcpy(cuda_vals, host_vals.get(), cmd_opt.n * sizeof(ValueType), cudaMemcpyHostToDevice);
+    cudaMemcpy(cuda_vals, host_vals, cmd_opt.n * sizeof(ValueType), cudaMemcpyHostToDevice);
     checkCUDAError("Error copying values from host to device");
     cudaMemset(cuda_pfx, 0, cmd_opt.n * sizeof(ValueType));
     checkCUDAError("Error set prefix sum to 0");
@@ -47,7 +46,7 @@ int main(int argc, char** argv) {
     switch(cmd_opt.version) {
         case 0:
             for (int i = 0; i < cmd_opt.reps; ++i) {
-                pfxsum_host(cmd_opt.n, host_vals.get(), res.get());
+                pfxsum_host(cmd_opt.n, host_vals, res);
             }
             break;
         case 1:
@@ -66,7 +65,7 @@ int main(int argc, char** argv) {
     checkCUDAError("Error in cuda kernel");
     switch(cmd_opt.version) {
         case 1:
-        cudaMemcpy(res.get(), cuda_pfx, cmd_opt.n * sizeof(ValueType), cudaMemcpyDeviceToHost);
+        cudaMemcpy(res, cuda_pfx, cmd_opt.n * sizeof(ValueType), cudaMemcpyDeviceToHost);
         checkCUDAError("Error copying values from device to host");
         cudaFree(cuda_vals);
         checkCUDAError("Error releasing values");
@@ -79,7 +78,10 @@ int main(int argc, char** argv) {
     printf("Computation time: %f sec. [%f gflops]\n", t_device, gflops_d);
     perfString(t_device, gflops_d, cmd_opt);
 
-    verify(cmd_opt.n, res.get(), ground_truth.get(), cmd_opt.eps);
+    verify(cmd_opt.n, res, ground_truth, cmd_opt.eps);
+    delete [] host_vals;
+    delete [] ground_truth;
+    delete [] res;
     return 0;
 }
 

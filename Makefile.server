@@ -1,6 +1,6 @@
-# Platform: WINDOWS
+# Platform: LINUX
 
-NVCCFLAGS = --ptxas-options=-v -O3 -Xcompiler "/w"
+NVCCFLAGS = --ptxas-options=-v -O3 -DLINUX
 
 APP=pfxsum
 OBJECTS = helper.obj pfxsum.obj pfxsum_host.obj pfxsum_naive.obj
