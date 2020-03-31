@@ -1,4 +1,5 @@
 #include <cuda.h>
+#include <cstdio>
 #include "helper.h"
 
 // put everything into shared memory.
@@ -14,14 +15,14 @@ __global__ void naive_scan_allshare(int N, ValueType *g_idata, ValueType *g_odat
     } else {
         temp[pout * N + I] = 0;
     }
-    
+
     __syncthreads();
-    for (int offset = 1; offset < N; offset *= 2)   {
-        
+    for (int offset = 1; offset <= N; offset *= 2)   {
+        // printf("%d %f %f\n", offset, I, temp[pin * N + I], temp[pout * N + I]);
         pout = 1 - pout; // swap double buffer indices
         pin = 1 - pout;
         if (I >= offset) {
-            temp[pout * N + I] += temp[pin * N + I - offset];
+            temp[pout * N + I] = temp[pin * N + I] + temp[pin * N + I - offset];
         } else {
             temp[pout * N + I] = temp[pin * N + I];
         }
