@@ -3,14 +3,14 @@
 NVCCFLAGS = --ptxas-options=-v -O3 -DLINUX
 
 APP=pfxsum
-OBJECTS = helper.obj pfxsum.obj pfxsum_host.obj pfxsum_naive.obj
+OBJECTS = helper.o pfxsum.o pfxsum_host.o pfxsum_naive.o pfxsum_rs.o pfxsum_thrust.o
 
 NVCC = nvcc
 
-%.obj : %.cu
+%.o : %.cu
 	$(NVCC) -c $(NVCCFLAGS) $@ $<
 
-%.obj : %.cc
+%.o : %.cc
 	$(NVCC) -c $(NVCCFLAGS) $@ $<
 
 $(APP): $(OBJECTS)
