@@ -31,8 +31,8 @@ int main(int argc, char** argv) {
 
     ValueType* res = new ValueType[cmd_opt.n];
 
-    ValueType* cuda_vals = nullptr;
-    ValueType* cuda_pfx = nullptr;
+    ValueType* cuda_vals = NULL;
+    ValueType* cuda_pfx = NULL;
     
     cudaMalloc(&cuda_vals, cmd_opt.n * sizeof(ValueType));
     checkCUDAError("Error allocating device memory for values");
