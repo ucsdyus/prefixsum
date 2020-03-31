@@ -3,7 +3,7 @@
 NVCCFLAGS = --ptxas-options=-v -O3 -Xcompiler "/w"
 
 APP=pfxsum
-OBJECTS = helper.obj pfxsum.obj pfxsum_host.obj pfxsum_naive.obj
+OBJECTS = helper.obj pfxsum.obj pfxsum_host.obj pfxsum_naive.obj pfxsum_rs.obj
 
 NVCC = nvcc
 

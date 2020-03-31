@@ -13,6 +13,8 @@ void pfxsum_host(int N, ValueType* vals, ValueType* pfx);
 
 void pfxsum_v1_allshare(int N, ValueType* vals, ValueType* pfx);
 
+void pfxsum_v2_allshare(int N, ValueType* vals, ValueType* pfx);
+
 int main(int argc, char** argv) {
     CmdOptions cmd_opt;
     cmdline(argc, argv, cmd_opt);
@@ -54,6 +56,11 @@ int main(int argc, char** argv) {
                 pfxsum_v1_allshare(cmd_opt.n, cuda_vals, cuda_pfx);
             }
             break;
+        case 2:
+            for (int i = 0; i < cmd_opt.reps; ++i) {
+                pfxsum_v2_allshare(cmd_opt.n, cuda_vals, cuda_pfx);
+            }
+            break;
         default:
             std::cout << "Not Implemented Error: version " << cmd_opt.version << std::endl;
             exit(-1);
@@ -64,15 +71,15 @@ int main(int argc, char** argv) {
 
     checkCUDAError("Error in cuda kernel");
     switch(cmd_opt.version) {
-        case 1:
+        case 1: case 2:
         cudaMemcpy(res, cuda_pfx, cmd_opt.n * sizeof(ValueType), cudaMemcpyDeviceToHost);
         checkCUDAError("Error copying values from device to host");
-        cudaFree(cuda_vals);
-        checkCUDAError("Error releasing values");
-        cudaFree(cuda_pfx);
-        checkCUDAError("Error releasing prefix sum");
         break;
     }
+    cudaFree(cuda_vals);
+    checkCUDAError("Error releasing values");
+    cudaFree(cuda_pfx);
+    checkCUDAError("Error releasing prefix sum");
 
     double gflops_d = getGflops(cmd_opt.n, cmd_opt.reps, t_device);
     printf("Computation time: %f sec. [%f gflops]\n", t_device, gflops_d);
@@ -90,17 +97,24 @@ void verify(int N, ValueType* res, ValueType* gt, ValueType eps) {
     for (int i = 0; i < N; ++i) {
         err += (res[i] - gt[i]) * (res[i] - gt[i]);
     }
-    err = std::sqrt(err);
+    err /= (ValueType) N;
     if (err > eps) {
         std::cout << "*** a total of error: " << err
             << " exceeds eps: " << eps << std::endl;
-        std::cout << res[0];
+        
+        std::cout << ">>> CALC: " << res[0];
         for (int i = 1; i < N; ++i) {
             std::cout << " " << res[i];
         }
         std::cout << std::endl;
+
+        std::cout << ">>> GT: " << gt[0];
+        for (int i = 1; i < N; ++i) {
+            std::cout << " " << gt[i];
+        }
+        std::cout << std::endl;
     } else {
-        std::cout << "*** error < eps: " << eps << std::endl;
+        std::cout << "*** MSE < eps: " << eps << std::endl;
         std::cout << "*** answer verified" << std::endl;
     }
 }
