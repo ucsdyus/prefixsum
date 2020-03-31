@@ -15,6 +15,8 @@ void pfxsum_v1_allshare(int N, ValueType* vals, ValueType* pfx);
 
 void pfxsum_v2_allshare(int N, ValueType* vals, ValueType* pfx);
 
+void pfxsum_v3_thrust(int N, ValueType* vals, ValueType* pfx);
+
 int main(int argc, char** argv) {
     CmdOptions cmd_opt;
     cmdline(argc, argv, cmd_opt);
@@ -61,6 +63,11 @@ int main(int argc, char** argv) {
                 pfxsum_v2_allshare(cmd_opt.n, cuda_vals, cuda_pfx);
             }
             break;
+        case 3:
+            for (int i = 0; i < cmd_opt.reps; ++i) {
+                pfxsum_v3_thrust(cmd_opt.n, cuda_vals, cuda_pfx);
+            }
+            break;
         default:
             std::cout << "Not Implemented Error: version " << cmd_opt.version << std::endl;
             exit(-1);
@@ -71,7 +78,7 @@ int main(int argc, char** argv) {
 
     checkCUDAError("Error in cuda kernel");
     switch(cmd_opt.version) {
-        case 1: case 2:
+        case 1: case 2: case 3:
         cudaMemcpy(res, cuda_pfx, cmd_opt.n * sizeof(ValueType), cudaMemcpyDeviceToHost);
         checkCUDAError("Error copying values from device to host");
         break;
